@@ -139,7 +139,7 @@ export default function Explore() {
         />
         <Button
           type="submit"
-          className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-xl"
+          className="bg-pink-600 hover:bg-pink-700 cursor-pointer text-white px-6 py-2 rounded-xl"
           disabled={loading}
         >
           {loading ? "Searching..." : "Search"}

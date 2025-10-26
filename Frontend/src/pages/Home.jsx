@@ -25,7 +25,7 @@ export default function Home() {
           <motion.button
             whileHover={{ scale: 1.07 }}
             whileTap={{ scale: 0.97 }}
-            className="bg-indigo-600 text-white px-8 py-3.5 rounded-xl font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all duration-300"
+            className="bg-indigo-600 text-white px-8 py-3.5 cursor-pointer rounded-xl font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all duration-300"
             onClick={() => navigate("/assessment")}
           >
             Take Personality Assessment
@@ -34,7 +34,7 @@ export default function Home() {
           <motion.button
             whileHover={{ scale: 1.07 }}
             whileTap={{ scale: 0.97 }}
-            className="bg-white text-indigo-700 border border-indigo-600 px-8 py-3.5 rounded-xl font-semibold shadow-sm hover:bg-indigo-50 hover:shadow-md transition-all duration-300"
+            className="bg-white text-indigo-700 border cursor-pointer border-indigo-600 px-8 py-3.5 rounded-xl font-semibold shadow-sm hover:bg-indigo-50 hover:shadow-md transition-all duration-300"
             onClick={() => navigate("/explore")}
           >
             Explore Books by Category
