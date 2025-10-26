@@ -1,0 +1,22 @@
+# --- Python (Backend) ---
+Backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# --- Node (Frontend) ---
+node_modules/
+dist/
+build/
+
+# --- System / Editor Files ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.env
+
+# --- Log / Cache Files ---
+*.log
