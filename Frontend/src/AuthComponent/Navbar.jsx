@@ -22,7 +22,7 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated }) {
         ) : (
           <Link
             to="/auth"
-            className="bg-white text-blue-600 px-3 py-1 rounded-md font-semibold"
+            className="bg-white text-blue-600 px-3 py-1 cursor-pointer rounded-md font-semibold"
           >
             Login / Sign Up
           </Link>

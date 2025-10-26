@@ -129,7 +129,7 @@ export default function Auth({ setIsAuthenticated }) {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+            className="w-full bg-blue-600 cursor-pointer text-white py-2 rounded-lg hover:bg-blue-700"
           >
             {isLogin ? "Login" : "Sign Up"}
           </button>
@@ -143,7 +143,7 @@ export default function Auth({ setIsAuthenticated }) {
               setErrors({});
               setFormData({ username: "", email: "", confirmEmail: "", password: "" });
             }}
-            className="text-blue-600 underline"
+            className="text-blue-600 cursor-pointer underline"
           >
             {isLogin ? "Sign Up" : "Login"}
           </button>
