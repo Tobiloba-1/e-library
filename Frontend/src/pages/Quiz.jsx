@@ -108,7 +108,7 @@ function Quiz() {
             className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                : "bg-indigo-600 cursor-pointer hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
             }`}
           >
             {loading ? "Submitting..." : "Submit Quiz"}
