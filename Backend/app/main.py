@@ -1,6 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from app.routes import auth 
+
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import Base, engine, SessionLocal
+from .models.user import User
+from pydantic import BaseModel
+import hashlib
 
 app = FastAPI()
 
@@ -11,6 +19,58 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Auth script starts here
+# create DB tables
+Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# Request Schemas
+class RegisterRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+@app.post("/api/register")
+def register_user(user: RegisterRequest, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
+    new_user = User(username=user.username, email=user.email, password=hashed_password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {"message": "Registration successful", "user": new_user.username}
+
+
+@app.post("/api/login")
+def login_user(user: LoginRequest, db: Session = Depends(get_db)):
+    hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
+    db_user = db.query(User).filter(User.email == user.email, User.password == hashed_password).first()
+
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return {"message": "Login successful", "user": db_user.username}
+# Auth script ends here.
+
+
 
 class QuizAnswers(BaseModel):
     answers: dict
@@ -162,120 +222,6 @@ def search_books(category: str):
     ]
     return {"books": books}
 
+# this is for the authentication
+app.include_router(auth.router, prefix="/api")
 
-# @app.get("/api/books/recommend/{personality_type}")
-# def recommend_books(personality_type: str):
-#     recommendations = {
-#         "The Thinker": [
-#             {
-#                 "title": "Thinking, Fast and Slow",
-#                 "author": "Daniel Kahneman",
-#                 "link": "https://www.goodreads.com/book/show/11468377-thinking-fast-and-slow"
-#             },
-#             {
-#                 "title": "The Art of Thinking Clearly",
-#                 "author": "Rolf Dobelli",
-#                 "link": "https://www.goodreads.com/book/show/16248196-the-art-of-thinking-clearly"
-#             },
-#             {
-#                 "title": "Predictably Irrational",
-#                 "author": "Dan Ariely",
-#                 "link": "https://www.goodreads.com/book/show/1713426.Predictably_Irrational"
-#             },
-#             {
-#                 "title": "Superforecasting",
-#                 "author": "Philip E. Tetlock",
-#                 "link": "https://www.goodreads.com/book/show/23995360-superforecasting"
-#             },
-#         ],
-#         "The Explorer": [
-#             {
-#                 "title": "Into the Wild",
-#                 "author": "Jon Krakauer",
-#                 "link": "https://www.goodreads.com/book/show/1845.Into_the_Wild"
-#             },
-#             {
-#                 "title": "The Alchemist",
-#                 "author": "Paulo Coelho",
-#                 "link": "https://www.goodreads.com/book/show/865.The_Alchemist"
-#             },
-#             {
-#                 "title": "Eat Pray Love",
-#                 "author": "Elizabeth Gilbert",
-#                 "link": "https://www.goodreads.com/book/show/19501.Eat_Pray_Love"
-#             },
-#             {
-#                 "title": "Wild",
-#                 "author": "Cheryl Strayed",
-#                 "link": "https://www.goodreads.com/book/show/12262741-wild"
-#             },
-#         ],
-#         "The Dreamer": [
-#             {
-#                 "title": "Big Magic",
-#                 "author": "Elizabeth Gilbert",
-#                 "link": "https://www.goodreads.com/book/show/24453082-big-magic"
-#             },
-#             {
-#                 "title": "The War of Art",
-#                 "author": "Steven Pressfield",
-#                 "link": "https://www.goodreads.com/book/show/1319.The_War_of_Art"
-#             },
-#             {
-#                 "title": "Steal Like an Artist",
-#                 "author": "Austin Kleon",
-#                 "link": "https://www.goodreads.com/book/show/13099738-steal-like-an-artist"
-#             },
-#             {
-#                 "title": "The Artist's Way",
-#                 "author": "Julia Cameron",
-#                 "link": "https://www.goodreads.com/book/show/615570.The_Artist_s_Way"
-#             },
-#         ],
-#         "The Strategist": [
-#             {
-#                 "title": "The 48 Laws of Power",
-#                 "author": "Robert Greene",
-#                 "link": "https://www.goodreads.com/book/show/1303.The_48_Laws_of_Power"
-#             },
-#             {
-#                 "title": "Good Strategy Bad Strategy",
-#                 "author": "Richard Rumelt",
-#                 "link": "https://www.goodreads.com/book/show/11721966-good-strategy-bad-strategy"
-#             },
-#             {
-#                 "title": "The Art of War",
-#                 "author": "Sun Tzu",
-#                 "link": "https://www.goodreads.com/book/show/10534.The_Art_of_War"
-#             },
-#             {
-#                 "title": "Measure What Matters",
-#                 "author": "John Doerr",
-#                 "link": "https://www.goodreads.com/book/show/39286958-measure-what-matters"
-#             },
-#         ],
-#         "General": [
-#             {
-#                 "title": "Atomic Habits",
-#                 "author": "James Clear",
-#                 "link": "https://www.goodreads.com/book/show/40121378-atomic-habits"
-#             },
-#             {
-#                 "title": "Mindset",
-#                 "author": "Carol Dweck",
-#                 "link": "https://www.goodreads.com/book/show/40745.Mindset"
-#             },
-#             {
-#                 "title": "Deep Work",
-#                 "author": "Cal Newport",
-#                 "link": "https://www.goodreads.com/book/show/25744928-deep-work"
-#             },
-#             {
-#                 "title": "The Power of Now",
-#                 "author": "Eckhart Tolle",
-#                 "link": "https://www.goodreads.com/book/show/6708.The_Power_of_Now"
-#             },
-#         ],
-#     }
-
-#     return {"books": recommendations.get(personality_type, recommendations["General"])}

@@ -10,6 +10,7 @@ export default function Auth({ setIsAuthenticated }) {
     password: "",
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -43,29 +44,65 @@ export default function Auth({ setIsAuthenticated }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    setLoading(true);
 
-    if (isLogin) {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (
-        storedUser &&
-        storedUser.email === formData.email &&
-        storedUser.password === formData.password
-      ) {
-        alert("Login successful ✅");
-        // mark as authenticated in app state
-        if (setIsAuthenticated) setIsAuthenticated(true);
-        navigate("/explore");
-      } else {
-        alert("Invalid credentials ❌");
+    try {
+      const endpoint = isLogin
+        ? "http://127.0.0.1:8000/api/login"
+        : "http://127.0.0.1:8000/api/register";
+
+      const payload = isLogin
+        ? {
+            email: formData.email,
+            password: formData.password,
+          }
+        : {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+          };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.detail || "Something went wrong ❌");
+        setLoading(false);
+        return;
       }
-    } else {
-      localStorage.setItem("user", JSON.stringify(formData));
-      alert("Signup successful 🎉");
+
+      // ✅ Successful login or signup
+      alert(data.message || "Success ✅");
+
+      // Extract key details from response
+      const userData = {
+        username: data.username || formData.username || "User",
+        email: data.email || formData.email,
+        token: data.token || null, // if backend sends a token
+      };
+
+      // ✅ Save to localStorage for persistence
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // ✅ Update app state
       if (setIsAuthenticated) setIsAuthenticated(true);
-      navigate("/explore");
+
+      // ✅ Redirect user to home
+      navigate("/");
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Network error. Please check your connection ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,11 +119,14 @@ export default function Auth({ setIsAuthenticated }) {
               <input
                 type="text"
                 name="username"
+                autoComplete="off"
                 placeholder="Username"
                 onChange={handleChange}
                 className="w-full p-2 border rounded-lg"
               />
-              {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+              {errors.username && (
+                <p className="text-red-500 text-sm">{errors.username}</p>
+              )}
             </div>
           )}
 
@@ -98,7 +138,9 @@ export default function Auth({ setIsAuthenticated }) {
               onChange={handleChange}
               className="w-full p-2 border rounded-lg"
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
           </div>
 
           {!isLogin && (
@@ -124,14 +166,17 @@ export default function Auth({ setIsAuthenticated }) {
               onChange={handleChange}
               className="w-full p-2 border rounded-lg"
             />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
           </div>
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-blue-600 cursor-pointer text-white py-2 rounded-lg hover:bg-blue-700"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
 
@@ -141,7 +186,12 @@ export default function Auth({ setIsAuthenticated }) {
             onClick={() => {
               setIsLogin(!isLogin);
               setErrors({});
-              setFormData({ username: "", email: "", confirmEmail: "", password: "" });
+              setFormData({
+                username: "",
+                email: "",
+                confirmEmail: "",
+                password: "",
+              });
             }}
             className="text-blue-600 cursor-pointer underline"
           >

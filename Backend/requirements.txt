@@ -1,7 +1,22 @@
+# FastAPI core
 fastapi
 uvicorn[standard]
+
+# HTTP clients and requests
 httpx
+requests
+
+# Environment variables
 python-dotenv
+
+# Database ORM and migrations
 sqlalchemy
-alembic          # optional for DB migrations
+alembic  # optional for DB migrations
+
+# Data validation and serialization
 pydantic
+
+# Optional (recommended) utilities
+passlib[bcrypt]   # for password hashing
+python-multipart  # for handling form uploads (e.g., images, files)
+email-validator   # for validating email fields in models
